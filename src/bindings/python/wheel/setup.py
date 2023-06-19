@@ -51,6 +51,9 @@ PUGIXML_LIBS_DIR = os.getenv("PUGIXML_LIBS_DIR", f"runtime/3rdparty/pugixml/{LIB
 PY_PACKAGES_DIR = os.getenv("PY_PACKAGES_DIR", f"python/{PYTHON_VERSION}")
 LIBS_RPATH = "$ORIGIN" if sys.platform == "linux" else "@loader_path"
 
+# Assume vpux plugin is in the same level in the dir tree as OpenVINO for now
+VPUX_BUILD_DIR = OPENVINO_BUILD_DIR+"../../../applications.ai.vpu-accelerators.vpux-plugin/build"
+
 LIB_INSTALL_CFG = {
     "ie_libs": {
         "name": "core",
@@ -79,6 +82,13 @@ LIB_INSTALL_CFG = {
         "install_dir": OV_RUNTIME_LIBS_DIR,
         "rpath": LIBS_RPATH,
         "binary_dir": OPENVINO_BUILD_DIR,
+    },
+    "vpux_plugin": {
+        "name": "vpux",
+        "prefix": "libs.vpux",
+        "install_dir": OV_RUNTIME_LIBS_DIR,
+        "rpath": LIBS_RPATH,
+        "binary_dir": VPUX_BUILD_DIR,
     },
     "multi_plugin": {
         "name": "multi",
