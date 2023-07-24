@@ -78,19 +78,14 @@ def openvino_execute(gm: GraphModule, *args, executor_parameters=None, partition
         compiled_cache[partition_id] = compiled
 
     flat_args, _ = tree_flatten(args)
-    ov_inputs = [a.numpy() for a in flat_args]
+    ov_inputs = [a.detach().cpu().numpy() for a in flat_args]
 
     res = compiled(ov_inputs)
 
-    results1 = [res[out] for out in compiled.outputs]
-
+    results1 = [torch.from_numpy(res[out]) for out in compiled.outputs]
     if len(results1) == 1:
-        results = torch.from_numpy(results1[0])
-        return results
-    else:
-        for i in range(len(results1)):
-            results1[i] = torch.from_numpy(results1[i])
-        return results1
+        return results1[0]
+    return results1
 
 
 class OpenVINOGraphModule(torch.nn.Module):
