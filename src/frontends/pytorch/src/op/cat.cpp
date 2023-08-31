@@ -5,6 +5,7 @@
 #include "openvino/frontend/pytorch/node_context.hpp"
 #include "openvino/op/concat.hpp"
 #include "openvino/op/parameter.hpp"
+#include "openvino/op/unsqueeze.hpp"
 #include "pt_framework_node.hpp"
 #include "utils.hpp"
 #include "utils_quantize.hpp"
@@ -72,6 +73,18 @@ OutputVector translate_quantized_cat(const NodeContext& context) {
                      context.get_input(2),
                      context.get_input(3),
                      list_elems.front())};
+};
+
+OutputVector translate_stack_fx(const NodeContext& context) {
+    // This translator is only needed to get axis as constant from external scope
+    num_inputs_check(context, 2, context.get_input_size());
+    std::deque<Output<Node>> list_elems;
+    for (size_t i = 0; i < context.get_input_size() - 1; i++) {
+        auto in_unsqueeze = context.mark_node(std::make_shared<v0::Unsqueeze>(context.get_input(static_cast<int>(i)), context.get_input(context.get_input_size() - 1)));
+        list_elems.push_back(in_unsqueeze);
+    }
+    auto axis = context.const_input<int64_t>(context.get_input_size() - 1);
+    return translate_cat_common(context, list_elems, axis);
 };
 
 }  // namespace op
